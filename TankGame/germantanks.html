@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Top-Down Tank</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- Vehicle tech tree -->
+<div id="menuOverlay">
+  <div class="menu-shell">
+    <header class="menu-topbar">
+      <div class="menu-brand"><span class="brand-mark">TB</span><div><div class="menu-title">TANK BATTLE</div><div class="menu-subtitle">GROUND FORCES · VEHICLE RESEARCH</div></div></div>
+      <div class="service-status"><i></i> BATTLE READY</div>
+    </header>
+    <nav id="nationSelect" class="nation-tabs" aria-label="Choose a nation">
+      <button class="nation-btn" data-nation="usa" onclick="showTankSelection('usa')">🇺🇸 <span>USA</span></button>
+      <button class="nation-btn" data-nation="germany" onclick="showTankSelection('germany')">🇩🇪 <span>GERMANY</span></button>
+      <button class="nation-btn" data-nation="britain" onclick="showTankSelection('britain')">🇬🇧 <span>BRITAIN</span></button>
+      <button class="nation-btn" data-nation="ussr" onclick="showTankSelection('ussr')">🇷🇺 <span>USSR</span></button>
+      <button class="nation-btn" data-nation="korea" onclick="showTankSelection('korea')">🇰🇷 <span>KOREA</span></button>
+    </nav>
+    <div id="tankSelect" class="selection-layout">
+      <section class="tech-tree-panel">
+        <div class="tree-heading"><div><div class="eyebrow">RESEARCH TREE</div><h1 class="nation-label" id="nationLabel">Germany</h1></div><div class="tree-hint">SELECT A VEHICLE TO VIEW DETAILS</div></div>
+        <div class="tree-column-heads"><span>RANK I</span><span>RANK II</span><span>RANK III</span><span>RANK IV</span><span>RANK V</span></div>
+        <div class="tree-scroll"><div class="tank-grid" id="tankGrid"></div></div>
+        <div class="tree-legend"><span><i class="legend-dot ready"></i> AVAILABLE</span><span><i class="legend-line"></i> VEHICLE LINE</span><span class="tree-count" id="treeCount">0 VEHICLES</span></div>
+      </section>
+      <aside class="tank-details" id="tankDetails" aria-live="polite">
+        <div class="detail-empty"><span class="detail-kicker">VEHICLE CARD</span><div class="detail-silhouette">✦</div><h2>Select a vehicle</h2><p>Choose a tank from the research tree to inspect its role and combat specifications.</p></div>
+        <div class="detail-data" id="detailData" hidden></div>
+        <section class="battle-settings" aria-label="Battle settings">
+          <div class="settings-title"><span>BATTLE SETTINGS</span><kbd>M</kbd><kbd>T</kbd></div>
+          <div class="setting-group">
+            <div class="setting-head"><span>MAP</span><b id="mapLabel">RANDOM</b></div>
+            <div class="opt-row" id="mapOptions" role="radiogroup" aria-label="Map"></div>
+            <p class="setting-note" id="mapNote"></p>
+          </div>
+          <div class="setting-group">
+            <div class="setting-head"><span>TIME OF DAY</span><b id="timeLabel">RANDOM</b></div>
+            <div class="opt-row" id="timeOptions" role="radiogroup" aria-label="Time of day"></div>
+            <p class="setting-note" id="timeNote"></p>
+          </div>
+        </section>
+        <button id="startGameBtn" class="play-btn" onclick="startGame()" disabled><span>ENTER BATTLE</span><b>➜</b></button>
+      </aside>
+    </div>
+    <footer class="menu-footer"><span>TRAINING GROUNDS</span><span><kbd>1</kbd>–<kbd>5</kbd> NATION &nbsp;·&nbsp; CLICK A VEHICLE &nbsp;·&nbsp; <kbd>M</kbd> MAP &nbsp;·&nbsp; <kbd>T</kbd> TIME &nbsp;·&nbsp; <kbd>ENTER</kbd> DEPLOY</span><span>v1.0</span></footer>
+  </div>
+</div>
+
+<div id="hud">
+  <div id="fps">FPS: --</div>
+  <div class="label">Player Tank</div>
+  <div id="reload">Ready</div>
+  <div id="speed">0 km/h</div>
+  <div id="shellType" style="display:none; color: #f4e8a8; font-size: 16px; font-weight: bold; margin-top: 8px;">AP</div>
+</div>
+<div id="aimReticle" aria-hidden="true">
+  <svg viewBox="0 0 1280 720" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <g fill="none" stroke="#dce6ce" stroke-width="1.5" opacity=".78">
+      <path d="M640 0v720M0 405h1280"/>
+      <circle cx="640" cy="360" r="13" stroke-width="2"/>
+      <path d="M628 360h24M640 348v24" stroke-width="2"/>
+      <path d="M626 415h28m-22 15h16m-16 15h16m-16 15h16m-22 15h28m-22 15h16m-16 15h16m-16 15h16m-22 15h28m-22 15h16m-16 15h16m-16 15h16m-22 15h28m-22 15h16m-16 15h16m-16 15h16m-22 15h28"/>
+      <path d="M130 386v38m-4-38h8m-8 38h8M258 386v38m-4-38h8m-8 38h8M386 386v38m-4-38h8m-8 38h8M514 386v38m-4-38h8m-8 38h8M766 386v38m-4-38h8m-8 38h8M894 386v38m-4-38h8m-8 38h8M1022 386v38m-4-38h8m-8 38h8M1150 386v38m-4-38h8m-8 38h8"/>
+    </g>
+    <g fill="#dce6ce" font-family="Arial,sans-serif" font-size="15" opacity=".9" text-anchor="middle">
+      <text x="130" y="378">32</text><text x="258" y="378">24</text><text x="386" y="378">16</text><text x="514" y="378">8</text>
+      <text x="766" y="378">8</text><text x="894" y="378">16</text><text x="1022" y="378">24</text><text x="1150" y="378">32</text>
+    </g>
+  </svg>
+</div>
+<div id="gunCrosshair" aria-hidden="true"><i></i><i></i><b></b></div>
+<div id="turretCircle" aria-hidden="true"></div>
+<div id="scopeTitle"><strong>GUNNER SIGHT</strong><br><span id="scopeCaliber">OPTICAL • 88 MM</span></div>
+<div id="scopeZoom">7× &nbsp; / &nbsp; GUN SIGHT</div>
+<div id="tankIndicator" aria-hidden="true">
+  <div id="tankCompass"></div><div id="tankHeading">HULL · 000°</div>
+  <div id="tankGlyph"><svg viewBox="0 0 48 94" xmlns="http://www.w3.org/2000/svg">
+    <path d="M18 8h12l3 14v47l-3 16H18l-3-16V22z" fill="#aab8a4" stroke="#e3ead7" stroke-width="1.5"/>
+    <path d="M12 20h24v48H12z" fill="#536459" stroke="#cdd8c3" stroke-width="1.2"/>
+    <g id="tankTurretGlyph"><path d="M17 30h14v25H17z" fill="#26352d" stroke="#cdd8c3" stroke-width="1"/>
+    <path d="M21 30V5h6v25" fill="#b7c3ab" stroke="#e3ead7" stroke-width="1.2"/></g>
+    <path d="M17 38h14M17 47h14" stroke="#849482" stroke-width="1"/>
+    <path d="M24 2l-4 7h8z" fill="#d5c452"/>
+  </svg></div>
+  <div id="tankReadout"><span id="tankGear">GEAR N</span><span id="tankSpeed">0 km/h</span></div>
+</div>
+<div id="instructions">W/S throttle · A/D steer · Mouse aim · Click to capture mouse / fire · Hold Shift for gunner sight · Space fire · Hold right-click for over-turret view · C to lock/unlock camera · Scroll to zoom · 0 free camera</div>
+<div id="freeCamHint" style="display:none;position:fixed;top:50%;right:14px;transform:translateY(-50%);background:rgba(10,14,10,0.78);border:1px solid #6b7a63;color:#dce6ce;padding:10px 14px;border-radius:6px;font:14px/1.5 Arial,sans-serif;text-align:right;max-width:170px;z-index:50;pointer-events:none;">FREE CAMERA<br><span style="opacity:.8;font-size:12px">WASD move · Q/E down/up · hold Shift to sprint · scroll = speed · mouse to look · click/Space fire gun · 0 to exit</span></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="lod.js"></script>
+<script src="forest-map.js"></script>
+<script src="desert-map.js"></script>
+<script src="town-map.js"></script>
+<script src="airport-map.js"></script>
+<script src="flight.js"></script>
+<script src="su30.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
